@@ -3,6 +3,7 @@ package com.example.maapp;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -44,14 +45,16 @@ public class MainActivity extends AppCompatActivity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(register == true)
-                loginFunction(view);
-                else{
-                    if(String.valueOf(emailEditText.getText()).length() != 0 && String.valueOf(passwordEditText.getText())!= null){
+
+                // check if password/login not empty
+                if(String.valueOf(emailEditText.getText()).length() != 0 && String.valueOf(passwordEditText.getText())!= null){
+                    if(register)
+                        loginFunction(view);
+                    else{
                         register(String.valueOf(emailEditText.getText()), String.valueOf(passwordEditText.getText()));
-                    }else {
-                        Toast.makeText(MainActivity.this, "Login or password empty", Toast.LENGTH_SHORT).show();
                     }
+                }else {
+                    Toast.makeText(MainActivity.this, "Login or password empty", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -65,8 +68,15 @@ public class MainActivity extends AppCompatActivity {
         textViewRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(register){
                 loginButton.setText("Register");
-                register = false;
+                textViewRegister.setText("LOGIN");
+                register = false;}
+                else {
+                    loginButton.setText("Login");
+                    textViewRegister.setText("REGISTER");
+                    register = true;
+                }
             }
         });
 
@@ -95,7 +105,6 @@ public class MainActivity extends AppCompatActivity {
 
     //// sign in
     public void register(String email, String password){
-        Toast.makeText(MainActivity.this, "Authentication failed", Toast.LENGTH_SHORT).show();
 
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {

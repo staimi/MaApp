@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "499629403391",
+    "project_id": "maapp-c71c6",
+    "storage_bucket": "maapp-c71c6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:499629403391:android:9aeeb9bce883c3776cf0ca",
+        "android_client_info": {
+          "package_name": "com.example.maapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "499629403391-2143esa4jtd0f54m6bitvsg1pqqot85s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQwFhQYKUa1VVx_oObWVxk0ur7a_8MPmA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "499629403391-2143esa4jtd0f54m6bitvsg1pqqot85s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
