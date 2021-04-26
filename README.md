@@ -22,3 +22,6 @@
 # List created with use of RecyclerView.
 
 ![alt-text](https://github.com/staimi/MaApp/blob/master/home_activity.jpg)
+ 
+# WebView
+![alt-text](https://github.com/staimi/MaApp/blob/master/webView.jpg)
