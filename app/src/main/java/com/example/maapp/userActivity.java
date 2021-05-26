@@ -1,18 +1,14 @@
 package com.example.maapp;
 
-import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -20,32 +16,19 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.net.sip.SipSession;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.MediaController;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.target.BitmapImageViewTarget;
-import com.example.*;
-import com.example.maapp.ui.home.HomeFragment;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.internal.Storage;
-import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -53,47 +36,18 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.IgnoreExtraProperties;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import pl.droidsonroids.gif.GifDrawable;
-import pl.droidsonroids.gif.GifImageButton;
-import pl.droidsonroids.gif.GifImageView;
-
-import static android.Manifest.permission_group.CAMERA;
-import static com.example.maapp.R.drawable.blank_profile_picture;
-
 public class userActivity extends AppCompatActivity {
 
+    private static final int READ_STORAGE_PERMISSION_REQUEST_CODE = 0;
     EditText editTextuserName, editTextuserSecondName, editTextuserDescription, editTextuserPhoneNumber;
     ImageView profilePicture;
     ImageButton switchToHomeActivity;
@@ -108,6 +62,8 @@ public class userActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user);
+
+        Log.d("userActivity", "started");
 
         Intent intent = new Intent(this, navigation_drawer.class);
 
@@ -131,13 +87,24 @@ public class userActivity extends AppCompatActivity {
 
         new download().execute("2");
 
+        //////////////////////////////////////////////////////
         profilePicture.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint({"LongLogTag", "IntentReset"})
             @Override
             public void onClick(View view) {
-                getImageFromAlbum();
+                try {
+                    checkPermissionForReadExternalStorage();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                Intent i = new Intent(
+                        Intent.ACTION_PICK,
+                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(i, RESULT_LOAD_IMAGE);
             }
         });
-
+        //////////////////////////////////////////////////////////
         switchToHomeActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -147,47 +114,64 @@ public class userActivity extends AppCompatActivity {
 
     }
 
-
-    private void getImageFromAlbum() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                    photoPickerIntent.setType("image/*");
-                    startActivityForResult(photoPickerIntent, RESULT_LOAD_IMAGE);
-                } catch (Exception exp) {
-                    Log.i("Error", exp.toString());
-                }
-            }
-        });
-    }
-
+    /////////////////////////////
     @Override
-    protected void onActivityResult(int reqCode, int resultCode, Intent data) {
-        super.onActivityResult(reqCode, resultCode, data);
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d("onActivityResult", "started");
+        Bitmap bitmap;
+        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
+            Uri selectedImage = data.getData();
+            Log.d("U selectedImage", String.valueOf(selectedImage));
 
+            String[] filePathColumn = { MediaStore.Images.Media.DATA };
+            Cursor cursor = getContentResolver().query(selectedImage,
+                    filePathColumn, null, null, null);
+            cursor.moveToFirst();
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            String picturePath = cursor.getString(columnIndex);
+            cursor.close();
+            bitmap = BitmapFactory.decodeFile(picturePath);
 
-        if (resultCode == RESULT_OK) {
-            try {
-                final Uri imageUri = data.getData();
-                final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-                profilePicture.setImageBitmap(null);
-                profilePicture.setImageBitmap(selectedImage);
-                saveProfilePicture(imageUri);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                Toast.makeText(userActivity.this, "Something went wrong", Toast.LENGTH_LONG).show();
-            }
-
-        } else {
-            Toast.makeText(userActivity.this, "You haven't picked Image", Toast.LENGTH_LONG).show();
+            profilePicture.setImageBitmap(bitmap);
+            saveProfilePicture(selectedImage);
+        }else {
+            Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
         }
     }
 
+
+    ///// Read external storage permission
+
+    public void checkPermissionForReadExternalStorage(){
+        Log.d("Permission", "checking");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+            == PackageManager.PERMISSION_DENIED){
+                requestPermissionForReadExternalStorage();
+            }else {
+                Log.d("Permission", "Granted");
+            }
+        }
+    }
+
+    /// ask for external storage permission
+
+    public void requestPermissionForReadExternalStorage(){
+
+        try {
+            ActivityCompat.requestPermissions( userActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    READ_STORAGE_PERMISSION_REQUEST_CODE);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+
     public void saveProfilePicture(Uri uri) {
 
+        Log.d("saveProfilePicture", "started");
         String userID = currentUser.getUid();
         progressDialog.setMessage("Uploading");
         progressDialog.show();
@@ -216,7 +200,7 @@ public class userActivity extends AppCompatActivity {
                     profilePicture.setImageBitmap(null);
                     StorageReference storageReference = FirebaseStorage.getInstance().getReference();
 
-                    StorageReference img = storageReference.child("images/users/" + currentUser.getUid().toString() + ".jpg");
+                    StorageReference img = storageReference.child("images/users/" + currentUser.getUid() + ".jpg");
 
                     final long ONE_MEGABYTE = 1024 * 1024;
                     img.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
@@ -232,6 +216,7 @@ public class userActivity extends AppCompatActivity {
                         }
                     });
                 } catch (Exception e) {
+                    Log.d("Download Avatar", "Error");
                     e.printStackTrace();
                 }
     }
@@ -373,7 +358,7 @@ public class userActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pg = ProgressDialog.show(userActivity.this, "Loading", null);
+            pg = ProgressDialog.show(userActivity.this, "Loading","Wait");
             Log.d("onPreExecute", "start");
         }
         @Override

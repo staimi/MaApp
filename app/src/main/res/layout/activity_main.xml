@@ -33,7 +33,9 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
+        style="Widget.MaterialComponents.Button"
         android:id="@+id/button_login"
+        android:background="@drawable/button_design"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="50dp"

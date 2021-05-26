@@ -25,7 +25,6 @@ public class MainActivity extends AppCompatActivity {
     Button loginButton;
     boolean register;
     private FirebaseAuth mAuth;
-    //private final String TAG = "EmailPassword";
 
 
     @Override
@@ -33,52 +32,68 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mAuth = FirebaseAuth.getInstance();
-        register = true;
+        Log.d("MainActivity", "started");
 
-        emailEditText = findViewById(R.id.editTextTextEmailAddress);
-        passwordEditText = findViewById(R.id.editTextTextPassword);
-        loginButton = findViewById(R.id.button_login);
-        loginTextView = findViewById(R.id.textViewLogin);
-        textViewRegister = findViewById(R.id.textViewRegister);
+        /// splashScreen activity
 
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        Intent iin= getIntent();
+        Bundle b = iin.getExtras();
 
-                // check if password/login not empty
-                if(String.valueOf(emailEditText.getText()).length() != 0 && String.valueOf(passwordEditText.getText())!= null){
-                    if(register)
-                        loginFunction(view);
-                    else{
-                        register(String.valueOf(emailEditText.getText()), String.valueOf(passwordEditText.getText()));
+        if(b==null)
+        {
+            startActivity(new Intent(this, splash_screen.class));
+        }else {
+
+            ///////////////
+
+
+            emailEditText = findViewById(R.id.editTextTextEmailAddress);
+            passwordEditText = findViewById(R.id.editTextTextPassword);
+            loginButton = findViewById(R.id.button_login);
+            loginTextView = findViewById(R.id.textViewLogin);
+            textViewRegister = findViewById(R.id.textViewRegister);
+
+            mAuth = FirebaseAuth.getInstance();
+            register = true;
+
+            loginButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    // check if password/login not empty
+                    if (String.valueOf(emailEditText.getText()).length() != 0 && String.valueOf(passwordEditText.getText()) != null) {
+                        if (register)
+                            loginFunction(view);
+                        else {
+                            register(String.valueOf(emailEditText.getText()), String.valueOf(passwordEditText.getText()));
+                        }
+                    } else {
+                        Toast.makeText(MainActivity.this, "Login or password empty", Toast.LENGTH_SHORT).show();
                     }
-                }else {
-                    Toast.makeText(MainActivity.this, "Login or password empty", Toast.LENGTH_SHORT).show();
                 }
+            });
+
+            textViewRegister.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (register) {
+                        loginButton.setText("Register");
+                        textViewRegister.setText("LOGIN");
+                        register = false;
+                    } else {
+                        loginButton.setText("Login");
+                        textViewRegister.setText("REGISTER");
+                        register = true;
+                    }
+                }
+            });
+
+            if (mAuth.getCurrentUser() != null) {
+                login();
+            } else {
+
             }
-        });
-
-        if(mAuth.getCurrentUser() != null){
-            login();
-        }else{
-
         }
-
-        textViewRegister.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(register){
-                loginButton.setText("Register");
-                textViewRegister.setText("LOGIN");
-                register = false;}
-                else {
-                    loginButton.setText("Login");
-                    textViewRegister.setText("REGISTER");
-                    register = true;
-                }
-            }
-        });
 
     }
     public void loginFunction(View view){
@@ -92,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             FirebaseUser user = mAuth.getCurrentUser();
                             login();
-                            Log.i("onComplete ", "Successsful");
+                            Log.i("onComplete ", "Successful");
                         } else {
                             Toast.makeText(MainActivity.this, "Wrong password or login", Toast.LENGTH_SHORT).show();
                         }
