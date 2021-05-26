@@ -25,3 +25,6 @@
  
 # WebView
 ![alt-text](https://github.com/staimi/MaApp/blob/master/webView.jpg)
+
+# Add a post
+![alt-text](https://github.com/staimi/MaApp/blob/master/add_post.jpg)
