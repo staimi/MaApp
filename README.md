@@ -28,3 +28,6 @@
 
 # Add a post
 ![alt-text](https://github.com/staimi/MaApp/blob/master/add_post.jpg)
+
+# Slideshow
+![](https://github.com/staimi/MaApp/blob/master/slideshow.gif)
